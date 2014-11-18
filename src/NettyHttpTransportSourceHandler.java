@@ -49,18 +49,24 @@ public class NettyHttpTransportSourceHandler extends ChannelInboundHandlerAdapte
 
         Bootstrap b = new Bootstrap();
         b.group(inboundChannel.eventLoop()).channel(ctx.channel().getClass());
-        b.handler(new NettyTargetHandlerinitiler(inboundChannel))
+        b.handler(new NettyTargetHandlerInitilizer(inboundChannel))
                 .option(ChannelOption.AUTO_READ, false);
+        
+        b.option(ChannelOption.TCP_NODELAY, true);
+        b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,15000);
+//        b.option(ChannelOption.SO_SNDBUF, 1024*5);
+//        b.option(ChannelOption.SO_RCVBUF, 1024*50);
+        b.option(ChannelOption.SO_SNDBUF, 1048576);
+        b.option(ChannelOption.SO_RCVBUF, 1048576);
+        
         ChannelFuture f = b.connect(NettyHttpListner.HOST, NettyHttpListner.HOST_PORT);
-        //  b.option(ChannelOption.SO_KEEPALIVE, true);
-        //b.option(ChannelOption.TCP_NODELAY, true);
+
         outboundChannel = f.channel();
         f.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     // connection complete start to read first data
-                    //    System.out.println("Inbound Channel read");
                     inboundChannel.read();
                 } else {
                     // Close the connection if the connection attempt has failed.
@@ -86,12 +92,9 @@ public class NettyHttpTransportSourceHandler extends ChannelInboundHandlerAdapte
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
-                            // was able to flush out data, start to read the next chunk
-                        //  fullHttpRequest.release();
-                        //   System.out.println("Flusing data to OUTBound Channel");
+                        // was able to flush out data, start to read the next chunk
                         ctx.channel().read();
                     } else {
-                        //  System.out.println("Closing Future Channel");
                         future.channel().close();
                     }
                 }
