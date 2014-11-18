@@ -126,10 +126,21 @@ public class NettyHttpListner {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new NettyHttpTransportHandlerInitializer(HOST, HOST_PORT, maxConnectionsQueued, sslCtx))
                     .childOption(ChannelOption.AUTO_READ, false);
-            //b.childOption(ChannelOption.SO_BACKLOG,maxConnectionsQueued);
-            //b.childOption(ChannelOption.SO_KEEPALIVE,true);
+
             b.option(ChannelOption.SO_BACKLOG, maxConnectionsQueued);
             b.childOption(ChannelOption.TCP_NODELAY, true);
+            b.option(ChannelOption.SO_KEEPALIVE, true);
+            b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15000);
+
+            b.option(ChannelOption.SO_SNDBUF, 1048576);
+            b.option(ChannelOption.SO_RCVBUF, 1048576);
+            b.childOption(ChannelOption.SO_RCVBUF, 1048576);
+            b.childOption(ChannelOption.SO_SNDBUF, 1048576);
+//            b.option(ChannelOption.SO_SNDBUF, 1024*5);
+//            b.option(ChannelOption.SO_RCVBUF, 1024*50);
+//            b.childOption(ChannelOption.SO_RCVBUF, 1024*5);
+//            b.childOption(ChannelOption.SO_SNDBUF, 1024*50);
+
             Channel ch = null;
             try {
                 ch = b.bind(port).sync().channel();
