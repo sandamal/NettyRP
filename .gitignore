@@ -1,0 +1,12 @@
+# Ignore everything in this directory
+nbproject/
+build/
+dist/
+
+# Class Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
