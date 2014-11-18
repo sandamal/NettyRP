@@ -1,5 +1,5 @@
 # Ignore everything in this directory
-nbproject/
+#nbproject/
 build/
 dist/
 
