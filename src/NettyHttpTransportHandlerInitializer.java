@@ -55,6 +55,6 @@ public class NettyHttpTransportHandlerInitializer extends ChannelInitializer<Soc
 
         p.addLast(new HttpServerCodec(102400, 102400, 102400));
         //   p.addLast(new HttpObjectAggregator(Constants.MAXIMUM_CHUNK_SIZE_AGGREGATOR));
-        p.addLast(new NettyHttpTransportSourceHandler(host, port, connections));
+        p.addLast(new NettyHttpTransportSourceHandler(connections));
     }
 }
