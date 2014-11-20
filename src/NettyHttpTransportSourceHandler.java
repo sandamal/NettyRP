@@ -17,6 +17,7 @@
  *  under the License.
  */
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 
@@ -25,14 +26,10 @@ import io.netty.channel.*;
  */
 public class NettyHttpTransportSourceHandler extends ChannelInboundHandlerAdapter {
 
-    private final String remoteHost;
-    private final int remotePort;
     private volatile Channel outboundChannel;
     private final int maxConnectionsQueued;
 
-    public NettyHttpTransportSourceHandler(String remoteHost, int remotePort, int maxConnectionsQueued) {
-        this.remoteHost = remoteHost;
-        this.remotePort = remotePort;
+    public NettyHttpTransportSourceHandler(int maxConnectionsQueued) {
         this.maxConnectionsQueued = maxConnectionsQueued;
     }
 
@@ -52,10 +49,10 @@ public class NettyHttpTransportSourceHandler extends ChannelInboundHandlerAdapte
         b.handler(new NettyTargetHandlerInitilizer(inboundChannel))
                 .option(ChannelOption.AUTO_READ, false);
         
+        b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         b.option(ChannelOption.TCP_NODELAY, true);
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,15000);
-//        b.option(ChannelOption.SO_SNDBUF, 1024*5);
-//        b.option(ChannelOption.SO_RCVBUF, 1024*50);
+
         b.option(ChannelOption.SO_SNDBUF, 1048576);
         b.option(ChannelOption.SO_RCVBUF, 1048576);
         

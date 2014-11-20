@@ -17,6 +17,7 @@
  *  under the License.
  */
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -51,6 +52,8 @@ public class NettyHttpListner {
     private int maxConnectionsQueued;
 
     private boolean SSL;
+    
+    private EventLoopGroup commonEventLoopGroup;
 
     public NettyHttpListner(int port) {
         this.port = port;
@@ -117,18 +120,24 @@ public class NettyHttpListner {
             }
         }
 
-        bossGroup = new NioEventLoopGroup(bossGroupSize);
-        workerGroup = new NioEventLoopGroup(workerGroupSize);
+         commonEventLoopGroup = new NioEventLoopGroup(bossGroupSize);
+//        bossGroup = new NioEventLoopGroup(bossGroupSize);
+//        workerGroup = new NioEventLoopGroup(workerGroupSize);
+        
         try {
             ServerBootstrap b = new ServerBootstrap();
 
-            b.group(bossGroup, workerGroup)
+//            b.commonEventLoopGroup(bossGroup, workerGroup)
+            b.group(commonEventLoopGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new NettyHttpTransportHandlerInitializer(HOST, HOST_PORT, maxConnectionsQueued, sslCtx))
                     .childOption(ChannelOption.AUTO_READ, false);
 
-            b.option(ChannelOption.SO_BACKLOG, maxConnectionsQueued);
+            b.option(ChannelOption.TCP_NODELAY, true);
             b.childOption(ChannelOption.TCP_NODELAY, true);
+            
+            b.option(ChannelOption.SO_BACKLOG, maxConnectionsQueued);
+                        
             b.option(ChannelOption.SO_KEEPALIVE, true);
             b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15000);
 
@@ -136,10 +145,8 @@ public class NettyHttpListner {
             b.option(ChannelOption.SO_RCVBUF, 1048576);
             b.childOption(ChannelOption.SO_RCVBUF, 1048576);
             b.childOption(ChannelOption.SO_SNDBUF, 1048576);
-//            b.option(ChannelOption.SO_SNDBUF, 1024*5);
-//            b.option(ChannelOption.SO_RCVBUF, 1024*50);
-//            b.childOption(ChannelOption.SO_RCVBUF, 1024*5);
-//            b.childOption(ChannelOption.SO_SNDBUF, 1024*50);
+
+            b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             Channel ch = null;
             try {
@@ -156,8 +163,9 @@ public class NettyHttpListner {
     }
 
     public void destroy() {
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+//        bossGroup.shutdownGracefully();
+//        workerGroup.shutdownGracefully();
+        commonEventLoopGroup.shutdownGracefully();
     }
 
     public int getPort() {
